@@ -25,7 +25,7 @@ class Product(Base):
     purchase_price = Column(Float)  # Закупочная цена
     
     # Дополнительные поля (гибкие)
-    metadata = Column(JSON)  # Метки и другие кастомные поля
+    product_metadata = Column(JSON)  # Метки и другие кастомные поля
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -100,5 +100,6 @@ class ImportLog(Base):
     records_failed = Column(Integer)
     status = Column(String)  # 'success', 'partial', 'failed'
     error_message = Column(String)
+    error_report_file = Column(String, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

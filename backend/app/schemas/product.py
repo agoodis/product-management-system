@@ -52,7 +52,7 @@ class ProductBase(BaseModel):
     stock_esenina_far: int = 0
     stock_total: int = 0
     purchase_price: Optional[float] = None
-    metadata: Optional[Dict[str, Any]] = None
+    product_metadata: Optional[Dict[str, Any]] = None
 
 class ProductCreate(ProductBase):
     pass
@@ -72,7 +72,7 @@ class ProductUpdate(BaseModel):
     stock_esenina_far: Optional[int] = None
     stock_total: Optional[int] = None
     purchase_price: Optional[float] = None
-    metadata: Optional[Dict[str, Any]] = None
+    product_metadata: Optional[Dict[str, Any]] = None
 
 class ProductResponse(ProductBase):
     created_at: datetime
@@ -100,6 +100,7 @@ class ImportLogResponse(BaseModel):
     records_failed: int
     status: str
     error_message: Optional[str] = None
+    error_report_file: Optional[str] = None
     created_at: datetime
     
     class Config:

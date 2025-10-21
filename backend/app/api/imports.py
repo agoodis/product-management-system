@@ -8,6 +8,7 @@ from app.models.product import ImportLog
 import os
 import shutil
 from datetime import datetime
+from fastapi.responses import FileResponse
 
 router = APIRouter()
 
@@ -173,3 +174,25 @@ def get_import_logs(
     """Получить историю импортов"""
     logs = db.query(ImportLog).order_by(ImportLog.created_at.desc()).limit(limit).all()
     return logs
+
+@router.get("/logs/{log_id}/error-report")
+def download_error_report(log_id: int, db: Session = Depends(get_db)):
+    """Скачать отчет об ошибках для конкретного импорта"""
+    log_entry = db.query(ImportLog).filter(ImportLog.id == log_id).first()
+    
+    if not log_entry:
+        raise HTTPException(status_code=404, detail="Лог импорта не найден")
+    
+    if not log_entry.error_report_file:
+        raise HTTPException(status_code=404, detail="Отчет об ошибках для этого импорта отсутствует")
+        
+    file_path = os.path.join("exports", log_entry.error_report_file)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Файл отчета не найден на сервере")
+
+    return FileResponse(
+        path=file_path,
+        filename=log_entry.error_report_file,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )

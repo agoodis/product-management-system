@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { importsApi } from '../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DescriptionIcon from '@mui/icons-material/Description'; // Иконка для отчета
 
 const ImportCard = ({ title, description, onUpload, loading }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -81,6 +82,7 @@ const ImportCard = ({ title, description, onUpload, loading }) => {
 const ImportPage = () => {
   const [loading, setLoading] = useState({});
   const [message, setMessage] = useState(null);
+  const [lastImportResult, setLastImportResult] = useState(null);
   const [logs, setLogs] = useState([]);
 
   const loadLogs = async () => {
@@ -99,6 +101,7 @@ const ImportPage = () => {
   const handleImport = async (type, file) => {
     setLoading(prev => ({ ...prev, [type]: true }));
     setMessage(null);
+    setLastImportResult(null); // Сбрасываем результат перед новым импортом
 
     try {
       let response;
@@ -125,19 +128,41 @@ const ImportPage = () => {
           break;
       }
 
+      setLastImportResult(response.data); // Сохраняем весь объект ответа
       setMessage({
         type: 'success',
         text: `Импорт завершен! Обработано: ${response.data.records_processed}, Добавлено: ${response.data.records_added}, Обновлено: ${response.data.records_updated}, Ошибок: ${response.data.records_failed}`
       });
       
       loadLogs();
-    } catch (err) {
+    } catch (err)
+ {
       setMessage({
         type: 'error',
         text: `Ошибка импорта: ${err.response?.data?.detail || err.message}`
       });
     } finally {
       setLoading(prev => ({ ...prev, [type]: false }));
+    }
+  };
+
+  const handleDownloadReport = async () => {
+    if (!lastImportResult || !lastImportResult.id) return;
+
+    try {
+      const response = await importsApi.downloadErrorReport(lastImportResult.id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', lastImportResult.error_report_file || 'error-report.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      setMessage({
+        type: 'error',
+        text: `Ошибка скачивания отчета: ${err.response?.data?.detail || err.message}`
+      });
     }
   };
 
@@ -165,6 +190,18 @@ const ImportPage = () => {
           severity={message.type} 
           sx={{ mb: 3 }}
           onClose={() => setMessage(null)}
+          action={
+            lastImportResult && lastImportResult.records_failed > 0 && (
+              <Button 
+                color="inherit" 
+                size="small" 
+                startIcon={<DescriptionIcon />}
+                onClick={handleDownloadReport}
+              >
+                Скачать отчет
+              </Button>
+            )
+          }
         >
           {message.text}
         </Alert>

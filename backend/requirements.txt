@@ -17,3 +17,4 @@ xlrd==2.0.1
 
 # Utilities
 python-dotenv==1.0.0
+python-calamine==0.5.4

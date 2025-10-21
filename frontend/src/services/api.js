@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// Используем переменную окружения. Если она не задана, 
+// используем дефолтный URL для локальной разработки (без Docker).
+const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:8000') + '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -65,6 +67,7 @@ export const importsApi = {
     });
   },
   getLogs: (limit = 50) => api.get('/imports/logs', { params: { limit } }),
+  downloadErrorReport: (logId) => api.get(`/imports/logs/${logId}/error-report`, { responseType: 'blob' }),
 };
 
 // Exports API

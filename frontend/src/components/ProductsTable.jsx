@@ -40,6 +40,22 @@ const ProductsTable = () => {
     },
     { field: 'article_1c', headerName: 'Артикул 1С', filter: true, width: 120 },
     { 
+      headerName: 'Артикул WB', 
+      width: 150,
+      valueGetter: params => {
+        const wb = params.data.marketplace_data?.find(m => m.marketplace === 'wb');
+        return wb?.external_id || '';
+      }
+    },
+    { 
+      headerName: 'SKU Ozon', 
+      width: 150,
+      valueGetter: params => {
+        const ozon = params.data.marketplace_data?.find(m => m.marketplace === 'ozon');
+        return ozon?.sku || '';
+      }
+    },
+    { 
       field: 'name', 
       headerName: 'Название', 
       filter: true, 
@@ -68,16 +84,37 @@ const ProductsTable = () => {
     { field: 'collection', headerName: 'Коллекция', width: 120 },
     {
       headerName: 'WB',
+      // --- НАЧАЛО ИЗМЕНЕНИЙ: ОБНОВЛЕННЫЙ БЛОК WB ---
       children: [
         {
           field: 'marketplace_data',
-          headerName: 'Цена',
+          headerName: 'Мин. цена',
           width: 110,
           valueGetter: params => {
             const wb = params.data.marketplace_data?.find(m => m.marketplace === 'wb');
-            return wb?.current_price || '';
+            return (wb && wb.min_price !== null && wb.min_price !== undefined) ? wb.min_price : null;
           },
-          valueFormatter: params => params.value ? `${params.value} ₽` : '-'
+          valueFormatter: params => (params.value !== null) ? `${params.value.toFixed(2)} ₽` : '-'
+        },
+        {
+          field: 'marketplace_data',
+          headerName: 'Текущая цена', // Переименовано для ясности
+          width: 110,
+          valueGetter: params => {
+            const wb = params.data.marketplace_data?.find(m => m.marketplace === 'wb');
+            return (wb && wb.current_price !== null && wb.current_price !== undefined) ? wb.current_price : null;
+          },
+          valueFormatter: params => (params.value !== null) ? `${params.value.toFixed(2)} ₽` : '-'
+        },
+        {
+          field: 'marketplace_data',
+          headerName: 'Цена до скидки', // Новая колонка
+          width: 120,
+          valueGetter: params => {
+            const wb = params.data.marketplace_data?.find(m => m.marketplace === 'wb');
+            return (wb && wb.price_before_discount !== null && wb.price_before_discount !== undefined) ? wb.price_before_discount : null;
+          },
+          valueFormatter: params => (params.value !== null) ? `${params.value.toFixed(2)} ₽` : '-'
         },
         {
           field: 'marketplace_data',
@@ -85,24 +122,45 @@ const ProductsTable = () => {
           width: 110,
           valueGetter: params => {
             const wb = params.data.marketplace_data?.find(m => m.marketplace === 'wb');
-            return wb?.discount_percent || '';
+            return (wb && wb.discount_percent !== null && wb.discount_percent !== undefined) ? wb.discount_percent : null;
           },
-          valueFormatter: params => params.value ? `${params.value}%` : '-'
+          valueFormatter: params => (params.value !== null) ? `${params.value}%` : '-'
         }
       ]
+      // --- КОНЕЦ ИЗМЕНЕНИЙ ---
     },
     {
       headerName: 'Ozon',
       children: [
         {
           field: 'marketplace_data',
-          headerName: 'Цена',
+          headerName: 'Мин. цена',
           width: 110,
           valueGetter: params => {
             const ozon = params.data.marketplace_data?.find(m => m.marketplace === 'ozon');
-            return ozon?.current_price || '';
+            return (ozon && ozon.min_price !== null && ozon.min_price !== undefined) ? ozon.min_price : null;
           },
-          valueFormatter: params => params.value ? `${params.value} ₽` : '-'
+          valueFormatter: params => (params.value !== null) ? `${params.value.toFixed(2)} ₽` : '-'
+        },
+        {
+          field: 'marketplace_data',
+          headerName: 'Текущая цена',
+          width: 110,
+          valueGetter: params => {
+            const ozon = params.data.marketplace_data?.find(m => m.marketplace === 'ozon');
+            return (ozon && ozon.current_price !== null && ozon.current_price !== undefined) ? ozon.current_price : null;
+          },
+          valueFormatter: params => (params.value !== null) ? `${params.value.toFixed(2)} ₽` : '-'
+        },
+        {
+          field: 'marketplace_data',
+          headerName: 'Цена до скидки',
+          width: 120,
+          valueGetter: params => {
+            const ozon = params.data.marketplace_data?.find(m => m.marketplace === 'ozon');
+            return (ozon && ozon.price_before_discount !== null && ozon.price_before_discount !== undefined) ? ozon.price_before_discount : null;
+          },
+          valueFormatter: params => (params.value !== null) ? `${params.value.toFixed(2)} ₽` : '-'
         },
         {
           field: 'marketplace_data',
@@ -110,9 +168,9 @@ const ProductsTable = () => {
           width: 110,
           valueGetter: params => {
             const ozon = params.data.marketplace_data?.find(m => m.marketplace === 'ozon');
-            return ozon?.discount_percent || '';
+            return (ozon && ozon.discount_percent !== null && ozon.discount_percent !== undefined) ? ozon.discount_percent : null;
           },
-          valueFormatter: params => params.value ? `${params.value}%` : '-'
+          valueFormatter: params => (params.value !== null) ? `${params.value}%` : '-'
         }
       ]
     },
